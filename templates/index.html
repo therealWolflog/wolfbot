@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wolfbot 🐺</title>
+  <style>
+    body { background-color: #121212; color: white; font-family: sans-serif; padding: 20px; }
+    .chat-box { max-width: 600px; margin: auto; background: #1e1e1e; border-radius: 10px; padding: 20px; }
+    .chat-entry { margin: 10px 0; }
+    .user { color: #6cf; }
+    .bot { color: #fc6; }
+    #typing { font-style: italic; display: none; }
+  </style>
+</head>
+<body>
+  <div class="chat-box">
+    <div id="chat"></div>
+    <div id="typing">Wolfbot is typing...</div>
+    <input id="input" autocomplete="off" placeholder="Type a message..." />
+    <button onclick="send()">Send</button>
+    <button onclick="resetChat()">Reset</button>
+  </div>
+  <script>
+    const chatDiv = document.getElementById("chat");
+    const input = document.getElementById("input");
+    const typing = document.getElementById("typing");
+
+    function send() {
+      const msg = input.value;
+      if (!msg) return;
+      chatDiv.innerHTML += `<div class='chat-entry user'><strong>You:</strong> ${msg}</div>`;
+      input.value = "";
+      typing.style.display = "block";
+      fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg }),
+      })
+      .then(res => res.json())
+      .then(data => {
+        typing.style.display = "none";
+        chatDiv.innerHTML += `<div class='chat-entry bot'><strong>Wolfbot:</strong> ${data.response}</div>`;
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+        new Audio('https://notificationsounds.com/storage/sounds/file-sounds-1156-pristine.mp3').play();
+      });
+    }
+
+    function resetChat() {
+      fetch("/reset", { method: "POST" }).then(() => {
+        chatDiv.innerHTML = "";
+      });
+    }
+  </script>
+</body>
+</html>
